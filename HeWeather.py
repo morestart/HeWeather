@@ -29,10 +29,17 @@ OPTIONS = {
     "wind_sc": ["HeWeather_wind_sc", "风力", "mdi:flag-variant", None],
     "cond_txt": ["HeWeather_cond_txt", "天气状态", "mdi:presentation", None],
     "qlty": ["HeWeather_qlty", "空气质量", "mdi:beach", None],
-    "main": ["HeWeather_main", "主要污染物", "mdi:google-circles-extended", None],
+    "main": ["HeWeather_main", "主要污染物", "chart-bar-stacked", None],
     "aqi": ["HeWeather_aqi", "空气质量指数", "mdi:food-croissant", None],
     "pm10": ["HeWeather_pm10", "PM10", "mdi:blur", "μg/m³"],
     "pm25": ["HeWeather_pm25", "PM2.5", "mdi:blur", "μg/m³"],
+    "comf": ["HeWeather_comf", "舒适度指数", "mdi:chart-bubble", None],
+    "cw": ["HeWeather_cw", "洗车指数", "mdi:car-wash", None],
+    "drsg": ["HeWeather_drsg", "穿衣指数", "mdi:tie", None],
+    "flu": ["HeWeather_flu", "感冒指数", "mdi:seat-individual-suite", None],
+    "sport": ["HeWeather_sport", "运动指数", "mdi:bike", None],
+    "uv": ["HeWeather_uv", "紫外线指数", "mdi:sunglasses", None],
+    "trav": ["HeWeather_trav", "出行指数", "mdi:bus", None]
 }
 
 ATTR_UPDATE_TIME = "更新时间"
@@ -50,6 +57,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 class WeatherData(object):
     def __init__(self, hass, city, appkey, aqi_city):
         self._url = "https://free-api.heweather.com/s6/weather/now?parameters"
+        self._air_url = "https://free-api.heweather.com/s6/air/now?parameters"
+        self._life_index_url = "https://free-api.heweather.com/s6/weather/lifestyle?parameters"
         self._params = {"location": city, "key": appkey}
         self._aqi_params = {"location": aqi_city, "key": appkey}
         self._fl = None
@@ -67,6 +76,13 @@ class WeatherData(object):
         self._pm10 = None
         self._pm25 = None
         self._updatetime = None
+        self._comf = None
+        self._cw = None
+        self._drsg = None
+        self._flu = None
+        self._sport = None
+        self._uv = None
+        self._trav = None
 
         self.update(dt_util.now())
 
@@ -129,6 +145,34 @@ class WeatherData(object):
         return self._pm25
 
     @property
+    def comf(self):
+        return self._comf
+
+    @property
+    def cw(self):
+        return self._cw
+
+    @property
+    def drsg(self):
+        return self._drsg
+
+    @property
+    def flu(self):
+        return self._flu
+
+    @property
+    def sport(self):
+        return self._sport
+
+    @property
+    def uv(self):
+        return self._uv
+
+    @property
+    def trav(self):
+        return self._trav
+
+    @property
     def updatetime(self):
         return self._updatetime
 
@@ -146,13 +190,23 @@ class WeatherData(object):
         self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
         self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
 
-        r_air = requests.get("https://free-api.heweather.com/s6/air/now?parameters", self._aqi_params)
+        r_air = requests.get(self._air_url, self._aqi_params)
         con_air = r_air.json()
         self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
         self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
         self._aqi = con_air["HeWeather6"][0]["air_now_city"]["aqi"]
         self._pm10 = con_air["HeWeather6"][0]["air_now_city"]["pm10"]
         self._pm25 = con_air["HeWeather6"][0]["air_now_city"]["pm25"]
+
+        life_index = requests.get(self._life_index_url, self._params)
+        con_life_index = life_index.json()
+        self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
+        self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
+        self._flu = con_life_index["HeWeather6"][0]["lifestyle"][2]["brf"]
+        self._sport = con_life_index["HeWeather6"][0]["lifestyle"][3]["brf"]
+        self._trav = con_life_index["HeWeather6"][0]["lifestyle"][4]["brf"]
+        self._uv = con_life_index["HeWeather6"][0]["lifestyle"][5]["brf"]
+        self._cw = con_life_index["HeWeather6"][0]["lifestyle"][6]["brf"]
         import time
         self._updatetime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
@@ -238,3 +292,17 @@ class HeWeatherSensor(Entity):
             self._state = self._data.pm10
         elif self._type == "pm25":
             self._state = self._data.pm25
+        elif self._type == "cw":
+            self._state = self._data.cw
+        elif self._type == "comf":
+            self._state = self._data.comf
+        elif self._type == "drsg":
+            self._state = self._data.drsg
+        elif self._type == "flu":
+            self._state = self._data.flu
+        elif self._type == "sport":
+            self._state = self._data.sport
+        elif self._type == "trav":
+            self._state = self._data.trav
+        elif self._type == "uv":
+            self._state = self._data.uv
