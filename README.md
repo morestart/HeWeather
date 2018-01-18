@@ -10,7 +10,8 @@ home assistant\custom_components\sensor
 ## Conf文件配置如下
 
 由于部分城市没有AQI监测站，如果填上你的城市导致报错，请将AQI城市换成你的上级城市
-'''
+
+``` yaml
 sensor:
   - platform: HeWeather
     city: 你所在的城市
@@ -31,4 +32,4 @@ sensor:
       - qlty
       - pm10
       - pm25
-'''
+```
