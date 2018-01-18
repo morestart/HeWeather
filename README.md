@@ -32,4 +32,11 @@ sensor:
       - qlty
       - pm10
       - pm25
+      - comf
+      - cw
+      - drsg
+      - flu
+      - sport
+      - trav
+      - uv
 ```
