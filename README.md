@@ -7,7 +7,7 @@ home assistant\custom_components\sensor
 
 在sensor文件夹下放入HeWeather.py文件
 
-## Conf文件配置如下
+## 配置
 
 由于部分城市没有AQI监测站，如果填上你的城市导致报错，请将AQI城市换成你的上级城市
 
