@@ -29,7 +29,7 @@ OPTIONS = {
     "wind_sc": ["HeWeather_wind_sc", "风力", "mdi:flag-variant", None],
     "cond_txt": ["HeWeather_cond_txt", "天气状态", "mdi:presentation", None],
     "qlty": ["HeWeather_qlty", "空气质量", "mdi:beach", None],
-    "main": ["HeWeather_main", "主要污染物", "chart-bar-stacked", None],
+    "main": ["HeWeather_main", "主要污染物", "mdi:chart-bar-stacked", None],
     "aqi": ["HeWeather_aqi", "空气质量指数", "mdi:food-croissant", None],
     "pm10": ["HeWeather_pm10", "PM10", "mdi:blur", "μg/m³"],
     "pm25": ["HeWeather_pm25", "PM2.5", "mdi:blur", "μg/m³"],
