@@ -178,7 +178,7 @@ class WeatherData(object):
 
     def update(self, now):
         _LOGGER.info("Update from HeWeather...")
-        r = requests.get(self._url, self._params)
+        r = requests.get(self._url, self._params, verify=False)
         con = r.json()
         self._fl = con["HeWeather6"][0]["now"]["fl"]
         self._cond_txt = con["HeWeather6"][0]["now"]["cond_txt"]
@@ -190,7 +190,7 @@ class WeatherData(object):
         self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
         self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
 
-        r_air = requests.get(self._air_url, self._aqi_params)
+        r_air = requests.get(self._air_url, self._aqi_params, verify=False)
         con_air = r_air.json()
         self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
         self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
@@ -198,7 +198,7 @@ class WeatherData(object):
         self._pm10 = con_air["HeWeather6"][0]["air_now_city"]["pm10"]
         self._pm25 = con_air["HeWeather6"][0]["air_now_city"]["pm25"]
 
-        life_index = requests.get(self._life_index_url, self._params)
+        life_index = requests.get(self._life_index_url, self._params, verify=False)
         con_life_index = life_index.json()
         self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
         self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
