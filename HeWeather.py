@@ -59,6 +59,7 @@ class WeatherData(object):
         self._url = "https://free-api.heweather.com/s6/weather/now?parameters"
         self._air_url = "https://free-api.heweather.com/s6/air/now?parameters"
         self._life_index_url = "https://free-api.heweather.com/s6/weather/lifestyle?parameters"
+        self._headers = {'User-Agent': 'User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'}
         self._params = {"location": city, "key": appkey}
         self._aqi_params = {"location": aqi_city, "key": appkey}
         self._fl = None
@@ -178,7 +179,7 @@ class WeatherData(object):
 
     def update(self, now):
         _LOGGER.info("Update from HeWeather...")
-        r = requests.get(self._url, self._params, verify=False)
+        r = requests.get(self._url, self._params, verify=False, headers=_headers)
         con = r.json()
         self._fl = con["HeWeather6"][0]["now"]["fl"]
         self._cond_txt = con["HeWeather6"][0]["now"]["cond_txt"]
@@ -190,7 +191,7 @@ class WeatherData(object):
         self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
         self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
 
-        r_air = requests.get(self._air_url, self._aqi_params, verify=False)
+        r_air = requests.get(self._air_url, self._aqi_params, verify=False, headers=_headers)
         con_air = r_air.json()
         self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
         self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
@@ -198,7 +199,7 @@ class WeatherData(object):
         self._pm10 = con_air["HeWeather6"][0]["air_now_city"]["pm10"]
         self._pm25 = con_air["HeWeather6"][0]["air_now_city"]["pm25"]
 
-        life_index = requests.get(self._life_index_url, self._params, verify=False)
+        life_index = requests.get(self._life_index_url, self._params, verify=False, headers=_headers)
         con_life_index = life_index.json()
         self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
         self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
