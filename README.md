@@ -330,6 +330,38 @@ class HeWeatherSensor(Entity):
 
 ``` -->
 
+## 配置内容如下
+
+``` yaml
+sensor:
+  - platform: HeWeather
+    city: 你所在的城市
+    aqi_city: 最近的有监测站的城市（比如你的上级城市或者你的城市）
+    appkey: 你的密钥
+    options:
+      - fl
+      - tmp
+      - cond_txt
+      - wind_spd
+      - hum
+      - pcpn
+      - pres
+      - vis
+      - wind_sc
+      - aqi
+      - main
+      - qlty
+      - pm10
+      - pm25
+      - comf
+      - cw
+      - drsg
+      - flu
+      - sport
+      - trav
+      - uv
+```
+
 ## customize文件内容如下
 
 ```yaml
@@ -378,36 +410,4 @@ sensor.heweather_wind_sc:
 sensor.heweather_wind_spd:
   friendly_name: 风速
 
-```
-
-## 配置内容如下
-
-``` yaml
-sensor:
-  - platform: HeWeather
-    city: 你所在的城市
-    aqi_city: 最近的有监测站的城市（比如你的上级城市或者你的城市）
-    appkey: 你的密钥
-    options:
-      - fl
-      - tmp
-      - cond_txt
-      - wind_spd
-      - hum
-      - pcpn
-      - pres
-      - vis
-      - wind_sc
-      - aqi
-      - main
-      - qlty
-      - pm10
-      - pm25
-      - comf
-      - cw
-      - drsg
-      - flu
-      - sport
-      - trav
-      - uv
 ```
