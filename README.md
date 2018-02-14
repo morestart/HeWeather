@@ -14,7 +14,7 @@
 
 
 
-## HeWeather.py
+<!-- ## HeWeather.py
 
 ``` Python
 import logging
@@ -328,7 +328,7 @@ class HeWeatherSensor(Entity):
         elif self._type == "uv":
             self._state = self._data.uv
 
-```
+``` -->
 
 ## customize文件内容如下
 
