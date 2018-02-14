@@ -240,7 +240,7 @@ class HeWeatherSensor(Entity):
 
     @property
     def name(self):
-        return self._object_id
+        return self._object_id + self._friendly_name
 
     @property
     def state(self):
