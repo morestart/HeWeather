@@ -255,7 +255,7 @@ class HeWeatherSensor(Entity):
         self._updatetime = None
 
     @property
-    def name(self):
+    def unique_id(self):
         return self._object_id
 
     @property
