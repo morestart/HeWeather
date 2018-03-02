@@ -5,7 +5,6 @@ import requests
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.entity import generate_entity_id
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.event import track_time_interval
 import homeassistant.util.dt as dt_util
@@ -18,6 +17,9 @@ CONF_OPTIONS = "options"
 CONF_CITY = "city"
 CONF_AQI_CITY = "aqi_city"
 CONF_APPKEY = "appkey"
+
+life_index_list = {"comf_txt": None, "drsg_txt": None, "flu_txt": None,
+                   "sport_txt": None, "trav_txt": None, "uv_txt": None, "cw_txt": None}
 
 OPTIONS = {
     "fl": ["HeWeather_fl", "体感温度", "mdi:temperature-celsius", "℃"],
@@ -61,8 +63,6 @@ class WeatherData(object):
         self._url = "https://free-api.heweather.com/s6/weather/now?parameters"
         self._air_url = "https://free-api.heweather.com/s6/air/now?parameters"
         self._life_index_url = "https://free-api.heweather.com/s6/weather/lifestyle?parameters"
-        self._headers = {'User-Agent': 'User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) '
-                                       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'}
         self._params = {"location": city, "key": appkey}
         self._aqi_params = {"location": aqi_city, "key": appkey}
         self._fl = None
@@ -185,10 +185,11 @@ class WeatherData(object):
     def updatetime(self):
         return self._updatetime
 
+
     def update(self, now):
         _LOGGER.info("Update from HeWeather...")
         try:
-            r = requests.get(self._url, self._params, verify=True, headers=self._headers)
+            r = requests.get(self._url, self._params, verify=True)
             con = r.json()
             self._fl = con["HeWeather6"][0]["now"]["fl"]
             self._cond_txt = con["HeWeather6"][0]["now"]["cond_txt"]
@@ -203,7 +204,7 @@ class WeatherData(object):
         except:
             _LOGGER.info("连接失败")
         try:
-            r_air = requests.get(self._air_url, self._aqi_params, verify=True, headers=self._headers)
+            r_air = requests.get(self._air_url, self._aqi_params, verify=True)
             con_air = r_air.json()
             self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
             self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
@@ -214,7 +215,7 @@ class WeatherData(object):
             _LOGGER.info("连接失败")
         
         try:
-            life_index = requests.get(self._life_index_url, self._params, verify=True, headers=self._headers)
+            life_index = requests.get(self._life_index_url, self._params, verify=True)
             con_life_index = life_index.json()
             self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
             self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
@@ -223,6 +224,12 @@ class WeatherData(object):
             self._trav = con_life_index["HeWeather6"][0]["lifestyle"][4]["brf"]
             self._uv = con_life_index["HeWeather6"][0]["lifestyle"][5]["brf"]
             self._cw = con_life_index["HeWeather6"][0]["lifestyle"][6]["brf"]
+
+            life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
+
+            for i, index in enumerate(life):
+                life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
+
         except:
             _LOGGER.info("连接失败")
         import time
@@ -272,12 +279,31 @@ class HeWeatherSensor(Entity):
 
     @property
     def device_state_attributes(self):
-        if self._state is not None:
-            return {
-                ATTR_ATTRIBUTION: ATTRIBUTION,
-                ATTR_FRIENDLY_NAME: self._friendly_name,
-                ATTR_UPDATE_TIME: self._updatetime
-            }
+        global ATTRIBUTION
+
+        if self._friendly_name == "舒适度指数":
+            ATTRIBUTION = life_index_list['comf_txt']
+        elif self._friendly_name == "穿衣指数":
+            ATTRIBUTION = life_index_list["drsg_txt"]
+        elif self._friendly_name == "感冒指数":
+            ATTRIBUTION = life_index_list["flu_txt"]
+        elif self._friendly_name == "运动指数":
+            ATTRIBUTION = life_index_list["sport_txt"]
+        elif self._friendly_name == "出行指数":
+            ATTRIBUTION = life_index_list["trav_txt"]
+        elif self._friendly_name == "紫外线指数":
+            ATTRIBUTION = life_index_list["uv_txt"]
+        elif self._friendly_name == "洗车指数":
+            ATTRIBUTION = life_index_list["cw_txt"]
+        else:
+            ATTRIBUTION = "Powered by HeWeather"
+
+        return {
+
+            ATTR_ATTRIBUTION: ATTRIBUTION,
+            ATTR_FRIENDLY_NAME: self._friendly_name,
+            ATTR_UPDATE_TIME: self._updatetime
+        }
 
     def update(self):
         self._updatetime = self._data.updatetime
