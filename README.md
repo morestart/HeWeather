@@ -41,4 +41,8 @@ sensor:
       - trav
       - uv
       - wind_dir
+      - tmp_max
+      - tmp_min
+      - pop
+
 ```

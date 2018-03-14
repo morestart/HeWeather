@@ -232,6 +232,13 @@ class WeatherData(object):
         try:
             life_index = requests.get(self._life_index_url, self._params, verify=True)
             con_life_index = life_index.json()
+            self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
+            self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
+            self._flu = con_life_index["HeWeather6"][0]["lifestyle"][2]["brf"]
+            self._sport = con_life_index["HeWeather6"][0]["lifestyle"][3]["brf"]
+            self._trav = con_life_index["HeWeather6"][0]["lifestyle"][4]["brf"]
+            self._uv = con_life_index["HeWeather6"][0]["lifestyle"][5]["brf"]
+            self._cw = con_life_index["HeWeather6"][0]["lifestyle"][6]["brf"]
             life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
             for i, index in enumerate(life):
                 life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
