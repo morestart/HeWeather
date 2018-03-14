@@ -42,9 +42,9 @@ OPTIONS = dict(fl=["HeWeather_fl", "实时体感温度", "mdi:temperature-celsiu
                sport=["HeWeather_sport", "运动指数", "mdi:bike", None],
                uv=["HeWeather_uv", "紫外线指数", "mdi:sunglasses", None],
                trav=["HeWeather_trav", "出行指数", "mdi:bus", None],
-               tmp_max=["Heweather_tmp_max", "今日最高温度", "mdi:mdi:thermometer", "℃"],
-               tmp_min=["Heweather_tmp_min", "今日最低温度", "mdi:mdi:thermometer", "℃"],
-               pop=["Heweather_pop", "降水概率", "mdi:weather-rainy", "%"])
+               tmp_max=["HeWeather_tmp_max", "今日最高温度", "mdi:mdi:thermometer", "℃"],
+               tmp_min=["HeWeather_tmp_min", "今日最低温度", "mdi:mdi:thermometer", "℃"],
+               pop=["HeWeather_pop", "降水概率", "mdi:weather-rainy", "%"])
 
 ATTR_UPDATE_TIME = "更新时间"
 ATTRIBUTION = "Powered by He Weather"
@@ -232,16 +232,7 @@ class WeatherData(object):
         try:
             life_index = requests.get(self._life_index_url, self._params, verify=True)
             con_life_index = life_index.json()
-            # self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
-            # self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
-            # self._flu = con_life_index["HeWeather6"][0]["lifestyle"][2]["brf"]
-            # self._sport = con_life_index["HeWeather6"][0]["lifestyle"][3]["brf"]
-            # self._trav = con_life_index["HeWeather6"][0]["lifestyle"][4]["brf"]
-            # self._uv = con_life_index["HeWeather6"][0]["lifestyle"][5]["brf"]
-            # self._cw = con_life_index["HeWeather6"][0]["lifestyle"][6]["brf"]
-
             life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
-
             for i, index in enumerate(life):
                 life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
         except ConnectionError:
