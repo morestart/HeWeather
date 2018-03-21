@@ -223,10 +223,16 @@ class WeatherData(object):
             r_air = requests.get(self._air_url, self._aqi_params, verify=True)
             con_air = r_air.json()
             self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
-            self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
             self._aqi = con_air["HeWeather6"][0]["air_now_city"]["aqi"]
             self._pm10 = con_air["HeWeather6"][0]["air_now_city"]["pm10"]
             self._pm25 = con_air["HeWeather6"][0]["air_now_city"]["pm25"]
+            if con_air["HeWeather6"][0]["air_now_city"]["main"] == "-":
+                if int(self._pm10) > int(self._pm25):
+                    self._main = self._pm10
+                else:
+                    self._main = self._pm25
+            else:
+                self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
         except ConnectionError:
             _LOGGER.info("连接失败")
         try:
@@ -250,7 +256,10 @@ class WeatherData(object):
             today_weather = r.json()
             self._tmp_max = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_max"]
             self._tmp_min = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_min"]
-            self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
+            if today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"] == "-":
+                self._pop = "无降水"
+            else:
+                self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
         except ConnectionError:
             _LOGGER.info("连接失败")
 
