@@ -93,10 +93,6 @@ class WeatherData(object):
         self._tmp_min = None
         self._pop = None
 
-        # self.update()
-
-        # track_time_interval(hass, self.update, TIME_BETWEEN_UPDATES)
-
     @property
     def fl(self):
         return self._fl
@@ -286,7 +282,6 @@ class HeWeatherSensor(Entity):
         self._icon = OPTIONS[option][2]
         self._unit_of_measurement = OPTIONS[option][3]
         self._type = option
-        # self.heweathersensor = data
         self._state = None
         self._updatetime = None
 
