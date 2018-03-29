@@ -3,14 +3,14 @@ from datetime import timedelta
 import voluptuous as vol
 import requests
 from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.const import ATTR_ATTRIBUTION, ATTR_FRIENDLY_NAME
+from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.event import track_time_interval
+from homeassistant.util import Throttle
 
 _LOGGER = logging.getLogger(__name__)
 
-TIME_BETWEEN_UPDATES = timedelta(seconds=600)
+TIME_BETWEEN_UPDATES = timedelta(seconds=1800)
 
 CONF_OPTIONS = "options"
 CONF_CITY = "city"
@@ -93,9 +93,9 @@ class WeatherData(object):
         self._tmp_min = None
         self._pop = None
 
-        self.update()
+        # self.update()
 
-        track_time_interval(hass, self.update, TIME_BETWEEN_UPDATES)
+        # track_time_interval(hass, self.update, TIME_BETWEEN_UPDATES)
 
     @property
     def fl(self):
@@ -201,6 +201,7 @@ class WeatherData(object):
     def updatetime(self):
         return self._updatetime
 
+    @Throttle(TIME_BETWEEN_UPDATES)
     def update(self):
         _LOGGER.info("Update from HeWeather...")
         try:
@@ -217,7 +218,7 @@ class WeatherData(object):
             self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
             self._wind_dir = con["HeWeather6"][0]["now"]["wind_dir"]
         except ConnectionError:
-            _LOGGER.info("连接失败")
+            _LOGGER.error("连接失败")
 
         try:
             r_air = requests.get(self._air_url, self._aqi_params, verify=True)
@@ -234,7 +235,7 @@ class WeatherData(object):
             else:
                 self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
         except ConnectionError:
-            _LOGGER.info("连接失败")
+            _LOGGER.error("连接失败")
         try:
             life_index = requests.get(self._life_index_url, self._params, verify=True)
             con_life_index = life_index.json()
@@ -249,19 +250,16 @@ class WeatherData(object):
             for i, index in enumerate(life):
                 life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
         except ConnectionError:
-            _LOGGER.info("连接失败")
+            _LOGGER.error("连接失败")
 
         try:
             r = requests.get(self._long_weather_forcasting_url, self._params, verify=True)
             today_weather = r.json()
             self._tmp_max = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_max"]
             self._tmp_min = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_min"]
-            if today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"] == "-":
-                self._pop = "无降水"
-            else:
-                self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
+            self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
         except ConnectionError:
-            _LOGGER.info("连接失败")
+            _LOGGER.error("连接失败")
 
         import time
         self._updatetime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -287,14 +285,18 @@ class HeWeatherSensor(Entity):
         self._friendly_name = OPTIONS[option][1]
         self._icon = OPTIONS[option][2]
         self._unit_of_measurement = OPTIONS[option][3]
-        self.registry_name = OPTIONS[option][1]
         self._type = option
+        # self.heweathersensor = data
         self._state = None
         self._updatetime = None
 
     @property
     def name(self):
         return self._object_id
+
+    @property
+    def registry_name(self):
+        return self._friendly_name
 
     @property
     def state(self):
@@ -330,13 +332,12 @@ class HeWeatherSensor(Entity):
             ATTRIBUTION = "Powered by HeWeather"
 
         return {
-
             ATTR_ATTRIBUTION: ATTRIBUTION,
-            ATTR_FRIENDLY_NAME: self._friendly_name,
             ATTR_UPDATE_TIME: self._updatetime
         }
 
     def update(self):
+        self._data.update()
         self._updatetime = self._data.updatetime
 
         if self._type == "fl":
