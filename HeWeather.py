@@ -211,7 +211,7 @@ class WeatherData(object):
             self._tmp = con["HeWeather6"][0]["now"]["tmp"]
             self._vis = con["HeWeather6"][0]["now"]["vis"]
             self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
-            self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
+            # self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
             self._wind_dir = con["HeWeather6"][0]["now"]["wind_dir"]
         except ConnectionError:
             _LOGGER.error("连接失败")
@@ -225,9 +225,11 @@ class WeatherData(object):
             self._pm25 = con_air["HeWeather6"][0]["air_now_city"]["pm25"]
             if con_air["HeWeather6"][0]["air_now_city"]["main"] == "-":
                 if int(self._pm10) > int(self._pm25):
-                    self._main = self._pm10
+                    self._main = "PM10"
+                elif int(self._pm10) < int(self._pm25):
+                    self._main = "PM25"
                 else:
-                    self._main = self._pm25
+                    self._main = "-"
             else:
                 self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
         except ConnectionError:
@@ -254,6 +256,7 @@ class WeatherData(object):
             self._tmp_max = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_max"]
             self._tmp_min = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_min"]
             self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
+            self._wind_sc = today_weather["HeWeather6"][0]["daily_forecast"][0]["wind_sc"]
         except ConnectionError:
             _LOGGER.error("连接失败")
 
