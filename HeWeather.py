@@ -386,5 +386,5 @@ class HeWeatherSensor(Entity):
             self._state = self._data.tmp_max
         elif self._type == "tmp_min":
             self._state = self._data.tmp_min
-        elif self._state == "pop":
+        elif self._type == "pop":
             self._state = self._data.pop
