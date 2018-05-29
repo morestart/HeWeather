@@ -3,7 +3,6 @@ from datetime import timedelta
 import voluptuous as vol
 import requests
 from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
 from homeassistant.util import Throttle
@@ -48,6 +47,7 @@ OPTIONS = dict(fl=["HeWeather_fl", "实时体感温度", "mdi:temperature-celsiu
 
 ATTR_UPDATE_TIME = "更新时间"
 ATTRIBUTION = "Powered by He Weather"
+ATTRIBUTION_SUGGESTION = "生活建议"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -330,8 +330,8 @@ class HeWeatherSensor(Entity):
             ATTRIBUTION = "Powered by HeWeather"
 
         return {
-            ATTR_ATTRIBUTION: ATTRIBUTION,
-            ATTR_UPDATE_TIME: self._updatetime
+            ATTR_UPDATE_TIME: self._updatetime,
+            ATTRIBUTION_SUGGESTION: ATTRIBUTION,
         }
 
     def update(self):
