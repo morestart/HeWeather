@@ -213,11 +213,39 @@ class WeatherData(object):
             self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
             # self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
             self._wind_dir = con["HeWeather6"][0]["now"]["wind_dir"]
-        except ConnectionError:
+        except requests.exceptions.SSLError:
+            r = requests.get(self._url, self._params, verify=False)
+            con = r.json()
+            self._fl = con["HeWeather6"][0]["now"]["fl"]
+            self._cond_txt = con["HeWeather6"][0]["now"]["cond_txt"]
+            self._hum = con["HeWeather6"][0]["now"]["hum"]
+            self._pcpn = con["HeWeather6"][0]["now"]["pcpn"]
+            self._pres = con["HeWeather6"][0]["now"]["pres"]
+            self._tmp = con["HeWeather6"][0]["now"]["tmp"]
+            self._vis = con["HeWeather6"][0]["now"]["vis"]
+            self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
+            self._wind_dir = con["HeWeather6"][0]["now"]["wind_dir"]
+        except requests.exceptions.ConnectionError:
             _LOGGER.error("连接失败")
 
         try:
             r_air = requests.get(self._air_url, self._aqi_params, verify=True)
+            con_air = r_air.json()
+            self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
+            self._aqi = con_air["HeWeather6"][0]["air_now_city"]["aqi"]
+            self._pm10 = con_air["HeWeather6"][0]["air_now_city"]["pm10"]
+            self._pm25 = con_air["HeWeather6"][0]["air_now_city"]["pm25"]
+            if con_air["HeWeather6"][0]["air_now_city"]["main"] == "-":
+                if int(self._pm10) > int(self._pm25):
+                    self._main = "PM10"
+                elif int(self._pm10) < int(self._pm25):
+                    self._main = "PM25"
+                else:
+                    self._main = "-"
+            else:
+                self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
+        except requests.exceptions.SSLError:
+            r_air = requests.get(self._air_url, self._aqi_params, verify=False)
             con_air = r_air.json()
             self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
             self._aqi = con_air["HeWeather6"][0]["air_now_city"]["aqi"]
@@ -247,11 +275,31 @@ class WeatherData(object):
             life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
             for i, index in enumerate(life):
                 life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
+        except requests.exceptions.SSLError:
+            life_index = requests.get(self._life_index_url, self._params, verify=False)
+            con_life_index = life_index.json()
+            self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
+            self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
+            self._flu = con_life_index["HeWeather6"][0]["lifestyle"][2]["brf"]
+            self._sport = con_life_index["HeWeather6"][0]["lifestyle"][3]["brf"]
+            self._trav = con_life_index["HeWeather6"][0]["lifestyle"][4]["brf"]
+            self._uv = con_life_index["HeWeather6"][0]["lifestyle"][5]["brf"]
+            self._cw = con_life_index["HeWeather6"][0]["lifestyle"][6]["brf"]
+            life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
+            for i, index in enumerate(life):
+                life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
         except requests.exceptions.ConnectionError:
             _LOGGER.error("连接失败")
 
         try:
             r = requests.get(self._long_weather_forcasting_url, self._params, verify=True)
+            today_weather = r.json()
+            self._tmp_max = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_max"]
+            self._tmp_min = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_min"]
+            self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
+            self._wind_sc = today_weather["HeWeather6"][0]["daily_forecast"][0]["wind_sc"]
+        except requests.exceptions.SSLError:
+            r = requests.get(self._long_weather_forcasting_url, self._params, verify=False)
             today_weather = r.json()
             self._tmp_max = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_max"]
             self._tmp_min = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_min"]
