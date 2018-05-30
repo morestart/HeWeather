@@ -232,7 +232,7 @@ class WeatherData(object):
                     self._main = "-"
             else:
                 self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
-        except ConnectionError:
+        except requests.exceptions.ConnectionError:
             _LOGGER.error("连接失败")
         try:
             life_index = requests.get(self._life_index_url, self._params, verify=True)
@@ -247,7 +247,7 @@ class WeatherData(object):
             life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
             for i, index in enumerate(life):
                 life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
-        except ConnectionError:
+        except requests.exceptions.ConnectionError:
             _LOGGER.error("连接失败")
 
         try:
@@ -257,7 +257,7 @@ class WeatherData(object):
             self._tmp_min = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_min"]
             self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
             self._wind_sc = today_weather["HeWeather6"][0]["daily_forecast"][0]["wind_sc"]
-        except ConnectionError:
+        except requests.exceptions.ConnectionError:
             _LOGGER.error("连接失败")
 
         import time
