@@ -7,6 +7,7 @@ from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
 from homeassistant.util import Throttle
 
+
 _LOGGER = logging.getLogger(__name__)
 
 TIME_BETWEEN_UPDATES = timedelta(seconds=1800)
@@ -56,6 +57,132 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_OPTIONS, default=[]): vol.All(cv.ensure_list, [vol.In(OPTIONS)]),
     }
 )
+
+
+def setup_platform(hass, config, add_devices, discovery_info=None):
+    _LOGGER.info("Setup platform sensor.HeWeather")
+    city = config.get(CONF_CITY)
+    appkey = config.get(CONF_APPKEY)
+    aqi_city = config.get(CONF_AQI_CITY)
+    data = WeatherData(hass, city, appkey, aqi_city)
+
+    dev = []
+    for option in config[CONF_OPTIONS]:
+        dev.append(HeWeatherSensor(data, option))
+    add_devices(dev, True)
+
+
+class HeWeatherSensor(Entity):
+    def __init__(self, data, option):
+        self._data = data
+        self._object_id = OPTIONS[option][0]
+        self._friendly_name = OPTIONS[option][1]
+        self._icon = OPTIONS[option][2]
+        self._unit_of_measurement = OPTIONS[option][3]
+        self._type = option
+        self._state = None
+        self._updatetime = None
+
+    @property
+    def name(self):
+        return self._object_id
+
+    @property
+    def registry_name(self):
+        return self._friendly_name
+
+    @property
+    def state(self):
+        return self._state
+
+    @property
+    def icon(self):
+        return self._icon
+
+    @property
+    def unit_of_measurement(self):
+        return self._unit_of_measurement
+
+    @property
+    def device_state_attributes(self):
+        global ATTRIBUTION
+
+        if self._friendly_name == "舒适度指数":
+            ATTRIBUTION = life_index_list['comf_txt']
+        elif self._friendly_name == "穿衣指数":
+            ATTRIBUTION = life_index_list["drsg_txt"]
+        elif self._friendly_name == "感冒指数":
+            ATTRIBUTION = life_index_list["flu_txt"]
+        elif self._friendly_name == "运动指数":
+            ATTRIBUTION = life_index_list["sport_txt"]
+        elif self._friendly_name == "出行指数":
+            ATTRIBUTION = life_index_list["trav_txt"]
+        elif self._friendly_name == "紫外线指数":
+            ATTRIBUTION = life_index_list["uv_txt"]
+        elif self._friendly_name == "洗车指数":
+            ATTRIBUTION = life_index_list["cw_txt"]
+        else:
+            ATTRIBUTION = "Powered by HeWeather"
+
+        return {
+            ATTR_UPDATE_TIME: self._updatetime,
+            ATTRIBUTION_SUGGESTION: ATTRIBUTION,
+        }
+
+    def update(self):
+        self._data.update()
+        self._updatetime = self._data.updatetime
+
+        if self._type == "fl":
+            self._state = self._data.fl
+        elif self._type == "tmp":
+            self._state = self._data.tmp
+        elif self._type == "cond_txt":
+            self._state = self._data.cond_txt
+        elif self._type == "wind_spd":
+            self._state = self._data.wind_spd
+        elif self._type == "hum":
+            self._state = self._data.hum
+        elif self._type == "pcpn":
+            self._state = self._data.pcpn
+        elif self._type == "pres":
+            self._state = self._data.pres
+        elif self._type == "vis":
+            self._state = self._data.vis
+        elif self._type == "wind_sc":
+            self._state = self._data.wind_sc
+        elif self._type == "wind_dir":
+            self._state = self._data.wind_dir
+        elif self._type == "qlty":
+            self._state = self._data.qlty
+        elif self._type == "main":
+            self._state = self._data.main
+        elif self._type == "aqi":
+            self._state = self._data.aqi
+        elif self._type == "pm10":
+            self._state = self._data.pm10
+        elif self._type == "pm25":
+            self._state = self._data.pm25
+        elif self._type == "cw":
+            self._state = self._data.cw
+        elif self._type == "comf":
+            self._state = self._data.comf
+        elif self._type == "drsg":
+            self._state = self._data.drsg
+        elif self._type == "flu":
+            self._state = self._data.flu
+        elif self._type == "sport":
+            self._state = self._data.sport
+        elif self._type == "trav":
+            self._state = self._data.trav
+        elif self._type == "uv":
+            self._state = self._data.uv
+        elif self._type == "tmp_max":
+            self._state = self._data.tmp_max
+        elif self._type == "tmp_min":
+            self._state = self._data.tmp_min
+        elif self._type == "pop":
+            self._state = self._data.pop
 
 
 class WeatherData(object):
@@ -233,7 +360,6 @@ class WeatherData(object):
             self._tmp = con["HeWeather6"][0]["now"]["tmp"]
             self._vis = con["HeWeather6"][0]["now"]["vis"]
             self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
-            # self._wind_sc = con["HeWeather6"][0]["now"]["wind_sc"]
             self._wind_dir = con["HeWeather6"][0]["now"]["wind_dir"]
 
             self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
@@ -270,129 +396,3 @@ class WeatherData(object):
 
         import time
         self._updatetime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    _LOGGER.info("Setup platform sensor.HeWeather")
-    city = config.get(CONF_CITY)
-    appkey = config.get(CONF_APPKEY)
-    aqi_city = config.get(CONF_AQI_CITY)
-    data = WeatherData(hass, city, appkey, aqi_city)
-
-    dev = []
-    for option in config[CONF_OPTIONS]:
-        dev.append(HeWeatherSensor(data, option))
-    add_devices(dev, True)
-
-
-class HeWeatherSensor(Entity):
-    def __init__(self, data, option):
-        self._data = data
-        self._object_id = OPTIONS[option][0]
-        self._friendly_name = OPTIONS[option][1]
-        self._icon = OPTIONS[option][2]
-        self._unit_of_measurement = OPTIONS[option][3]
-        self._type = option
-        self._state = None
-        self._updatetime = None
-
-    @property
-    def name(self):
-        return self._object_id
-
-    @property
-    def registry_name(self):
-        return self._friendly_name
-
-    @property
-    def state(self):
-        return self._state
-
-    @property
-    def icon(self):
-        return self._icon
-
-    @property
-    def unit_of_measurement(self):
-        return self._unit_of_measurement
-
-    @property
-    def device_state_attributes(self):
-        global ATTRIBUTION
-
-        if self._friendly_name == "舒适度指数":
-            ATTRIBUTION = life_index_list['comf_txt']
-        elif self._friendly_name == "穿衣指数":
-            ATTRIBUTION = life_index_list["drsg_txt"]
-        elif self._friendly_name == "感冒指数":
-            ATTRIBUTION = life_index_list["flu_txt"]
-        elif self._friendly_name == "运动指数":
-            ATTRIBUTION = life_index_list["sport_txt"]
-        elif self._friendly_name == "出行指数":
-            ATTRIBUTION = life_index_list["trav_txt"]
-        elif self._friendly_name == "紫外线指数":
-            ATTRIBUTION = life_index_list["uv_txt"]
-        elif self._friendly_name == "洗车指数":
-            ATTRIBUTION = life_index_list["cw_txt"]
-        else:
-            ATTRIBUTION = "Powered by HeWeather"
-
-        return {
-            ATTR_UPDATE_TIME: self._updatetime,
-            ATTRIBUTION_SUGGESTION: ATTRIBUTION,
-        }
-
-    def update(self):
-        self._data.update()
-        self._updatetime = self._data.updatetime
-
-        if self._type == "fl":
-            self._state = self._data.fl
-        elif self._type == "tmp":
-            self._state = self._data.tmp
-        elif self._type == "cond_txt":
-            self._state = self._data.cond_txt
-        elif self._type == "wind_spd":
-            self._state = self._data.wind_spd
-        elif self._type == "hum":
-            self._state = self._data.hum
-        elif self._type == "pcpn":
-            self._state = self._data.pcpn
-        elif self._type == "pres":
-            self._state = self._data.pres
-        elif self._type == "vis":
-            self._state = self._data.vis
-        elif self._type == "wind_sc":
-            self._state = self._data.wind_sc
-        elif self._type == "wind_dir":
-            self._state = self._data.wind_dir
-        elif self._type == "qlty":
-            self._state = self._data.qlty
-        elif self._type == "main":
-            self._state = self._data.main
-        elif self._type == "aqi":
-            self._state = self._data.aqi
-        elif self._type == "pm10":
-            self._state = self._data.pm10
-        elif self._type == "pm25":
-            self._state = self._data.pm25
-        elif self._type == "cw":
-            self._state = self._data.cw
-        elif self._type == "comf":
-            self._state = self._data.comf
-        elif self._type == "drsg":
-            self._state = self._data.drsg
-        elif self._type == "flu":
-            self._state = self._data.flu
-        elif self._type == "sport":
-            self._state = self._data.sport
-        elif self._type == "trav":
-            self._state = self._data.trav
-        elif self._type == "uv":
-            self._state = self._data.uv
-        elif self._type == "tmp_max":
-            self._state = self._data.tmp_max
-        elif self._type == "tmp_min":
-            self._state = self._data.tmp_min
-        elif self._type == "pop":
-            self._state = self._data.pop
