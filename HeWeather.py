@@ -10,7 +10,7 @@ from homeassistant.util import Throttle
 
 _LOGGER = logging.getLogger(__name__)
 
-TIME_BETWEEN_UPDATES = timedelta(seconds=1800)
+TIME_BETWEEN_UPDATES = timedelta(seconds=1500)
 
 CONF_OPTIONS = "options"
 CONF_CITY = "city"
