@@ -6,11 +6,12 @@ from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
 from homeassistant.util import Throttle
-
+from requests.exceptions import (
+    ConnectionError as ConnectError, HTTPError, Timeout)
 
 _LOGGER = logging.getLogger(__name__)
 
-TIME_BETWEEN_UPDATES = timedelta(seconds=1500)
+TIME_BETWEEN_UPDATES = timedelta(minutes=30)
 
 CONF_OPTIONS = "options"
 CONF_CITY = "city"
@@ -44,7 +45,9 @@ OPTIONS = dict(fl=["HeWeather_fl", "实时体感温度", "mdi:temperature-celsiu
                trav=["HeWeather_trav", "出行指数", "mdi:bus", None],
                tmp_max=["HeWeather_tmp_max", "今日最高温度", "mdi:mdi:thermometer", "℃"],
                tmp_min=["HeWeather_tmp_min", "今日最低温度", "mdi:mdi:thermometer", "℃"],
-               pop=["HeWeather_pop", "降水概率", "mdi:weather-rainy", "%"])
+               pop=["HeWeather_pop", "降水概率", "mdi:weather-rainy", "%"],
+               cond_code=[])
+
 
 ATTR_UPDATE_TIME = "更新时间"
 ATTRIBUTION = "Powered by He Weather"
@@ -64,7 +67,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     city = config.get(CONF_CITY)
     appkey = config.get(CONF_APPKEY)
     aqi_city = config.get(CONF_AQI_CITY)
-    data = WeatherData(hass, city, appkey, aqi_city)
+    data = WeatherData(city, appkey, aqi_city)
 
     dev = []
     for option in config[CONF_OPTIONS]:
@@ -186,11 +189,11 @@ class HeWeatherSensor(Entity):
 
 
 class WeatherData(object):
-    def __init__(self, hass, city, appkey, aqi_city):
-        self._url = "https://free-api.heweather.com/s6/weather/now?parameters"
-        self._air_url = "https://free-api.heweather.com/s6/air/now?parameters"
-        self._life_index_url = "https://free-api.heweather.com/s6/weather/lifestyle?parameters"
-        self._long_weather_forcasting_url = "https://free-api.heweather.com/s6/weather/forecast?parameters"
+    def __init__(self, city, appkey, aqi_city):
+        self._url = "https://free-api.heweather.com/s6/weather/now"
+        self._air_url = "https://free-api.heweather.com/s6/air/now"
+        self._life_index_url = "https://free-api.heweather.com/s6/weather/lifestyle"
+        self._long_weather_forcasting_url = "https://free-api.heweather.com/s6/weather/forecast"
         self._params = {"location": city, "key": appkey}
         self._aqi_params = {"location": aqi_city, "key": appkey}
         self._fl = None
@@ -326,30 +329,38 @@ class WeatherData(object):
 
     def get_data(self):
         try:
-            now_weather = requests.get(self._url, self._params, verify=True)
+            now_weather = requests.post(self._url, self._params)
             con = now_weather.json()
 
-            r_air = requests.get(self._air_url, self._aqi_params, verify=True)
+            r_air = requests.post(self._air_url, self._aqi_params)
             con_air = r_air.json()
 
-            life_index = requests.get(self._life_index_url, self._params, verify=True)
+            life_index = requests.post(self._life_index_url, self._params)
             con_life_index = life_index.json()
 
-            r = requests.get(self._long_weather_forcasting_url, self._params, verify=True)
-            today_weather = r.json()
+            today_weather = requests.post(self._long_weather_forcasting_url, self._params)
+            con_today_weather = today_weather.json()
+            return con, con_air, con_life_index, con_today_weather
 
-            return con, con_air, con_life_index, today_weather
-        except Exception as e:
-            logging.error(e)
-            self.get_data()
+        except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            _LOGGER.error("Unable to connect to HeWeather. %s", error)
+            return
 
     @Throttle(TIME_BETWEEN_UPDATES)
     def update(self):
         data = self.get_data()
-        con = data[0]
-        con_air = data[1]
-        con_life_index = data[2]
-        today_weather = data[3]
+        if data is None:
+            data = self.get_data()
+            con = data[0]
+            con_air = data[1]
+            con_life_index = data[2]
+            today_weather = data[3]
+        else:
+            con = data[0]
+            con_air = data[1]
+            con_life_index = data[2]
+            today_weather = data[3]
+
         _LOGGER.info("Update from HeWeather...")
         try:
             self._fl = con["HeWeather6"][0]["now"]["fl"]
@@ -361,6 +372,8 @@ class WeatherData(object):
             self._vis = con["HeWeather6"][0]["now"]["vis"]
             self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
             self._wind_dir = con["HeWeather6"][0]["now"]["wind_dir"]
+
+            self._cond_code = con["HeWeather6"][0]["now"]["cond_code"]
 
             self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
             self._aqi = con_air["HeWeather6"][0]["air_now_city"]["aqi"]
@@ -392,7 +405,7 @@ class WeatherData(object):
             self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
             self._wind_sc = today_weather["HeWeather6"][0]["daily_forecast"][0]["wind_sc"]
         except Exception as e:
-            logging.error(e)
+            logging.info(e)
 
         import time
         self._updatetime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
