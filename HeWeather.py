@@ -48,7 +48,6 @@ OPTIONS = dict(fl=["HeWeather_fl", "实时体感温度", "mdi:temperature-celsiu
                pop=["HeWeather_pop", "降水概率", "mdi:weather-rainy", "%"],
                cond_code=[])
 
-
 ATTR_UPDATE_TIME = "更新时间"
 ATTRIBUTION = "Powered by He Weather"
 ATTRIBUTION_SUGGESTION = "生活建议"
@@ -327,39 +326,48 @@ class WeatherData(object):
     def updatetime(self):
         return self._updatetime
 
-    def get_data(self):
-        try:
-            now_weather = requests.post(self._url, self._params)
-            con = now_weather.json()
+    def now(self):
+        now_weather = requests.post(self._url, self._params)
+        con = now_weather.json()
+        return con
 
-            r_air = requests.post(self._air_url, self._aqi_params)
-            con_air = r_air.json()
+    def air(self):
+        r_air = requests.post(self._air_url, self._aqi_params)
+        con_air = r_air.json()
+        return con_air
 
-            life_index = requests.post(self._life_index_url, self._params)
-            con_life_index = life_index.json()
+    def life(self):
+        life_index = requests.post(self._life_index_url, self._params)
+        con_life_index = life_index.json()
+        return con_life_index
 
-            today_weather = requests.post(self._long_weather_forcasting_url, self._params)
-            con_today_weather = today_weather.json()
-            return con, con_air, con_life_index, con_today_weather
-
-        except (ConnectError, HTTPError, Timeout, ValueError) as error:
-            _LOGGER.error("Unable to connect to HeWeather. %s", error)
-            return
+    def today(self):
+        today_weather = requests.post(self._long_weather_forcasting_url, self._params)
+        con_today_weather = today_weather.json()
+        return con_today_weather
 
     @Throttle(TIME_BETWEEN_UPDATES)
     def update(self):
-        data = self.get_data()
-        if data is None:
-            data = self.get_data()
-            con = data[0]
-            con_air = data[1]
-            con_life_index = data[2]
-            today_weather = data[3]
-        else:
-            con = data[0]
-            con_air = data[1]
-            con_life_index = data[2]
-            today_weather = data[3]
+        try:
+            con = self.now()
+        except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            con = self.now()
+            _LOGGER.error("Unable to connect to HeWeather. %s", error)
+        try:
+            con_air = self.air()
+        except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            con_air = self.air()
+            _LOGGER.error("Unable to connect to HeWeather. %s", error)
+        try:
+            con_life_index = self.life()
+        except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            con_life_index = self.life()
+            _LOGGER.error("Unable to connect to HeWeather. %s", error)
+        try:
+            today_weather = self.today()
+        except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            today_weather = self.today()
+            _LOGGER.error("Unable to connect to HeWeather. %s", error)
 
         _LOGGER.info("Update from HeWeather...")
         try:
