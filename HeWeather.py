@@ -9,6 +9,7 @@ from homeassistant.util import Throttle
 from requests.exceptions import (
     ConnectionError as ConnectError, HTTPError, Timeout)
 
+# REQUIREMENTS = ['pyopenssl', 'ndg-httpsclient', 'pyasn1']
 _LOGGER = logging.getLogger(__name__)
 
 TIME_BETWEEN_UPDATES = timedelta(minutes=30)
@@ -61,7 +62,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 )
 
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
+def setup_platform(hass, config, add_entities, discovery_info=None):
     _LOGGER.info("Setup platform sensor.HeWeather")
     city = config.get(CONF_CITY)
     appkey = config.get(CONF_APPKEY)
@@ -71,7 +72,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     dev = []
     for option in config[CONF_OPTIONS]:
         dev.append(HeWeatherSensor(data, option))
-    add_devices(dev, True)
+    add_entities(dev, True)
 
 
 class HeWeatherSensor(Entity):
@@ -348,24 +349,29 @@ class WeatherData(object):
 
     @Throttle(TIME_BETWEEN_UPDATES)
     def update(self):
+        import time
         try:
             con = self.now()
         except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            time.sleep(0.01)
             con = self.now()
             _LOGGER.error("Unable to connect to HeWeather. %s", error)
         try:
             con_air = self.air()
         except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            time.sleep(0.01)
             con_air = self.air()
             _LOGGER.error("Unable to connect to HeWeather. %s", error)
         try:
             con_life_index = self.life()
         except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            time.sleep(0.01)
             con_life_index = self.life()
             _LOGGER.error("Unable to connect to HeWeather. %s", error)
         try:
             today_weather = self.today()
         except (ConnectError, HTTPError, Timeout, ValueError) as error:
+            time.sleep(0.01)
             today_weather = self.today()
             _LOGGER.error("Unable to connect to HeWeather. %s", error)
 
