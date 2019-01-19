@@ -9,7 +9,6 @@ from homeassistant.util import Throttle
 from requests.exceptions import (
     ConnectionError as ConnectError, HTTPError, Timeout)
 
-# REQUIREMENTS = ['pyopenssl', 'ndg-httpsclient', 'pyasn1']
 _LOGGER = logging.getLogger(__name__)
 
 TIME_BETWEEN_UPDATES = timedelta(minutes=30)
@@ -377,23 +376,23 @@ class WeatherData(object):
 
         _LOGGER.info("Update from HeWeather...")
         try:
-            self._fl = con["HeWeather6"][0]["now"]["fl"]
-            self._cond_txt = con["HeWeather6"][0]["now"]["cond_txt"]
-            self._hum = con["HeWeather6"][0]["now"]["hum"]
-            self._pcpn = con["HeWeather6"][0]["now"]["pcpn"]
-            self._pres = con["HeWeather6"][0]["now"]["pres"]
-            self._tmp = con["HeWeather6"][0]["now"]["tmp"]
-            self._vis = con["HeWeather6"][0]["now"]["vis"]
-            self._wind_spd = con["HeWeather6"][0]["now"]["wind_spd"]
-            self._wind_dir = con["HeWeather6"][0]["now"]["wind_dir"]
+            self._fl = con.get("HeWeather6")[0].get("now").get("fl")
+            self._cond_txt = con.get("HeWeather6")[0].get("now").get("cond_txt")
+            self._hum = con.get("HeWeather6")[0].get("now").get("hum")
+            self._pcpn = con.get("HeWeather6")[0].get("now").get("pcpn")
+            self._pres = con.get("HeWeather6")[0].get("now").get("pres")
+            self._tmp = con.get("HeWeather6")[0].get("now").get("tmp")
+            self._vis = con.get("HeWeather6")[0].get("now").get("vis")
+            self._wind_spd = con.get("HeWeather6")[0].get("now").get("wind_spd")
+            self._wind_dir = con.get("HeWeather6")[0].get("now").get("wind_dir")
 
-            self._cond_code = con["HeWeather6"][0]["now"]["cond_code"]
+            self._cond_code = con.get("HeWeather6")[0].get("now").get("cond_code")
 
-            self._qlty = con_air["HeWeather6"][0]["air_now_city"]["qlty"]
-            self._aqi = con_air["HeWeather6"][0]["air_now_city"]["aqi"]
-            self._pm10 = con_air["HeWeather6"][0]["air_now_city"]["pm10"]
-            self._pm25 = con_air["HeWeather6"][0]["air_now_city"]["pm25"]
-            if con_air["HeWeather6"][0]["air_now_city"]["main"] == "-":
+            self._qlty = con_air.get("HeWeather6")[0].get("air_now_city").get("qlty")
+            self._aqi = con_air.get("HeWeather6")[0].get("air_now_city").get("aqi")
+            self._pm10 = con_air.get("HeWeather6")[0].get("air_now_city").get("pm10")
+            self._pm25 = con_air.get("HeWeather6")[0].get("air_now_city").get("pm25")
+            if con_air.get("HeWeather6")[0].get("air_now_city").get("main") == "-":
                 if int(self._pm10) > int(self._pm25):
                     self._main = "PM10"
                 elif int(self._pm10) < int(self._pm25):
@@ -401,23 +400,23 @@ class WeatherData(object):
                 else:
                     self._main = "-"
             else:
-                self._main = con_air["HeWeather6"][0]["air_now_city"]["main"]
+                self._main = con_air.get("HeWeather6")[0].get("air_now_city").get("main")
 
-            self._comf = con_life_index["HeWeather6"][0]["lifestyle"][0]["brf"]
-            self._drsg = con_life_index["HeWeather6"][0]["lifestyle"][1]["brf"]
-            self._flu = con_life_index["HeWeather6"][0]["lifestyle"][2]["brf"]
-            self._sport = con_life_index["HeWeather6"][0]["lifestyle"][3]["brf"]
-            self._trav = con_life_index["HeWeather6"][0]["lifestyle"][4]["brf"]
-            self._uv = con_life_index["HeWeather6"][0]["lifestyle"][5]["brf"]
-            self._cw = con_life_index["HeWeather6"][0]["lifestyle"][6]["brf"]
+            self._comf = con_life_index.get("HeWeather6")[0].get("lifestyle")[0].get("brf")
+            self._drsg = con_life_index.get("HeWeather6")[0].get("lifestyle")[1].get("brf")
+            self._flu = con_life_index.get("HeWeather6")[0].get("lifestyle")[2].get("brf")
+            self._sport = con_life_index.get("HeWeather6")[0].get("lifestyle")[3].get("brf")
+            self._trav = con_life_index.get("HeWeather6")[0].get("lifestyle")[4].get("brf")
+            self._uv = con_life_index.get("HeWeather6")[0].get("lifestyle")[5].get("brf")
+            self._cw = con_life_index.get("HeWeather6")[0].get("lifestyle")[6].get("brf")
             life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
             for i, index in enumerate(life):
                 life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
 
-            self._tmp_max = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_max"]
-            self._tmp_min = today_weather["HeWeather6"][0]["daily_forecast"][0]["tmp_min"]
-            self._pop = today_weather["HeWeather6"][0]["daily_forecast"][0]["pop"]
-            self._wind_sc = today_weather["HeWeather6"][0]["daily_forecast"][0]["wind_sc"]
+            self._tmp_max = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("tmp_max")
+            self._tmp_min = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("tmp_min")
+            self._pop = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("pop")
+            self._wind_sc = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("wind_sc")
         except Exception as e:
             logging.info(e)
 
