@@ -15,7 +15,7 @@ TIME_BETWEEN_UPDATES = timedelta(minutes=30)
 
 CONF_OPTIONS = "options"
 CONF_CITY = "city"
-CONF_AQI_CITY = "aqi_city"
+# CONF_AQI_CITY = "aqi_city"
 CONF_APPKEY = "appkey"
 
 life_index_list = {"comf_txt": None, "drsg_txt": None, "flu_txt": None,
@@ -65,8 +65,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     _LOGGER.info("Setup platform sensor.HeWeather")
     city = config.get(CONF_CITY)
     appkey = config.get(CONF_APPKEY)
-    aqi_city = config.get(CONF_AQI_CITY)
-    data = WeatherData(city, appkey, aqi_city)
+    # aqi_city = config.get(CONF_AQI_CITY)
+    data = WeatherData(city, appkey)
 
     dev = []
     for option in config[CONF_OPTIONS]:
@@ -188,13 +188,13 @@ class HeWeatherSensor(Entity):
 
 
 class WeatherData(object):
-    def __init__(self, city, appkey, aqi_city):
+    def __init__(self, city, appkey):
         self._url = "https://free-api.heweather.com/s6/weather/now"
         self._air_url = "https://free-api.heweather.com/s6/air/now"
         self._life_index_url = "https://free-api.heweather.com/s6/weather/lifestyle"
         self._long_weather_forcasting_url = "https://free-api.heweather.com/s6/weather/forecast"
         self._params = {"location": city, "key": appkey}
-        self._aqi_params = {"location": aqi_city, "key": appkey}
+        # self._aqi_params = {"location": aqi_city, "key": appkey}
         self._fl = None
         self._tmp = None
         self._cond_txt = None
@@ -332,7 +332,7 @@ class WeatherData(object):
         return con
 
     def air(self):
-        r_air = requests.post(self._air_url, self._aqi_params)
+        r_air = requests.post(self._air_url, self._params)
         con_air = r_air.json()
         return con_air
 
