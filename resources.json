@@ -1,0 +1,4 @@
+[
+  "https://raw.githubusercontent.com/morestart/HeWeather/HACS/custom_components/HeWeather/manifest.json",
+  "https://raw.githubusercontent.com/morestart/HeWeather/HACS/custom_components/HeWeather/sensor.py",
+]
