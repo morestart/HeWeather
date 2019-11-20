@@ -329,7 +329,7 @@ class WeatherData(object):
     @property
     def updatetime(self):
         return self._updatetime
-
+    
     def now(self):
         now_weather = requests.post(self._url, self._params)
         con = now_weather.json()
