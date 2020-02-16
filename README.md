@@ -3,11 +3,23 @@
 ## 使用方法：
 
 - 在HA中建立以下路径
-    - `home assistant\custom_components\HeWeather\sensor.py`
-    - `home assistant\custom_components\HeWeather\manifest.json`
-- 或者使用以下命令下载 
-    - `curl -O https://raw.githubusercontent.com/morestart/HeWeather/More-than-0.63/sensor.py`
-    - `curl -O https://raw.githubusercontent.com/morestart/HeWeather/More-than-0.63/manifest.json`
+```bash
+# Linux or Mac OSX
+$ cd ~/.homeassistant/
+$ mkdir -p custom_components/HeWeather
+
+# Windows
+home assistant\custom_components\HeWeather\
+home assistant\custom_components\HeWeather\
+```
+
+- 使用以下命令下载
+
+```bash
+$ cd custom_components/HeWeather/
+$ curl -O https://raw.githubusercontent.com/morestart/HeWeather/More-than-0.63/sensor.py
+$ curl -O https://raw.githubusercontent.com/morestart/HeWeather/More-than-0.63/manifest.json
+```
 
 如果HA中不存在以上路径，请参照图示自行建立即可。
 

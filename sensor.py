@@ -193,10 +193,10 @@ class HeWeatherSensor(Entity):
 
 class WeatherData(object):
     def __init__(self, city, appkey):
-        self._url = "https://free-api.heweather.com/s6/weather/now"
-        self._air_url = "https://free-api.heweather.com/s6/air/now"
-        self._life_index_url = "https://free-api.heweather.com/s6/weather/lifestyle"
-        self._long_weather_forcasting_url = "https://free-api.heweather.com/s6/weather/forecast"
+        self._url = "https://free-api.heweather.net/s6/weather/now"
+        self._air_url = "https://free-api.heweather.net/s6/air/now"
+        self._life_index_url = "https://free-api.heweather.net/s6/weather/lifestyle"
+        self._long_weather_forcasting_url = "https://free-api.heweather.net/s6/weather/forecast"
         self._params = {"location": city, "key": appkey}
         # self._aqi_params = {"location": aqi_city, "key": appkey}
         self._fl = None
